@@ -1,0 +1,35 @@
+{
+    "name" : "Crypto Flash",
+    "appid" : "__UNI__46EFF37",
+    "description" : "加密资讯与交易点位终端",
+    "versionName" : "1.0.1",
+    "versionCode" : 100,
+    "transformPx" : false,
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {},
+        "distribute" : {
+            "android" : {
+                "packagename" : "com.yourname.cryptoflash",
+                "minSdkVersion" : 21,
+                "targetSdkVersion" : 33,
+                "abiFilters" : [ "armeabi-v7a", "arm64-v8a" ]
+            },
+            "ios" : {
+                "dSYMs" : false
+            },
+            "sdkConfigs" : {}
+        }
+    },
+    "h5" : {
+        "title" : "Crypto Flash"
+    }
+}

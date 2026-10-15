@@ -1,0 +1,74 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production H5 assets
+        run: npm run build:prod:h5
+
+      - name: Sync Capacitor iOS project
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios/App
+        run: pod install
+
+      - name: Build unsigned iOS app
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_IDENTITY='' \
+            build
+
+      - name: Package and verify unsigned IPA
+        run: |
+          set -euo pipefail
+          APP_PATH="ios/App/build/DerivedData/Build/Products/Release-iphoneos/App.app"
+          IPA_PATH="ios/App/build/CryptoFlash-unsigned.ipa"
+          test -d "$APP_PATH"
+          mkdir -p ios/App/build/ipa/Payload
+          cp -R "$APP_PATH" ios/App/build/ipa/Payload/App.app
+          (cd ios/App/build/ipa && /usr/bin/zip -qry "../CryptoFlash-unsigned.ipa" Payload)
+          /usr/bin/unzip -t "$IPA_PATH"
+          /usr/bin/unzip -Z1 "$IPA_PATH" | grep -q '^Payload/App\.app/Info\.plist$'
+          if /usr/bin/codesign -dv "$APP_PATH" 2>&1 | grep -q 'Authority='; then
+            echo 'Expected an unsigned app, but a signing authority was found.' >&2
+            exit 1
+          fi
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: CryptoFlash-unsigned-ipa
+          path: ios/App/build/CryptoFlash-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
