@@ -2,9 +2,11 @@
 import { onMounted, ref } from 'vue'
 import { onShareAppMessage } from '@dcloudio/uni-app'
 import { api } from '../../api'
+import { useSessionStore } from '../../store/session'
 import { t } from '../../locales'
 import '../../styles/app.scss'
 
+const store = useSessionStore()
 const item = ref<any>()
 const favorite = ref(false)
 const loading = ref(true)
@@ -12,18 +14,27 @@ const error = ref('')
 
 onMounted(async () => {
   const page: any = getCurrentPages().at(-1)
+  const id = String(page?.options?.id || '')
+  if (!store.token) {
+    uni.setStorageSync('cf_after_login', `/pages/detail/news?id=${encodeURIComponent(id)}`)
+    uni.reLaunch({ url: '/pages/index/index?auth=login' })
+    return
+  }
   try {
-    item.value = await api.newsById(page?.options?.id || '')
-    favorite.value = await api.isFavorite(item.value.id, 'news')
+    item.value = await api.newsById(id)
   } catch (e: any) {
     error.value = e?.message || t('资讯加载失败')
   } finally {
     loading.value = false
   }
+  if (item.value) {
+    try { favorite.value = await api.isFavorite(item.value.id, 'news') } catch {}
+  }
 })
 
 async function toggle() {
   if (!item.value) return
+  if (!store.token) return uni.reLaunch({ url: '/pages/index/index?auth=login' })
   favorite.value = await api.toggleFavorite(item.value.id, 'news', !favorite.value)
   uni.showToast({ title: favorite.value ? t('已收藏') : t('已取消收藏'), icon: 'none' })
 }
@@ -44,7 +55,7 @@ onShareAppMessage(() => {
     <view v-if="loading" class="detail-state">{{t('加载中...')}}</view>
     <view v-else-if="error" class="detail-state">{{error}}</view>
     <view v-else-if="item" class="detail-content">
-      <view class="detail-tags"><text v-if="item.level" class="urgent-tag">{{item.level}}</text><text v-for="tag in item.tags.split(' ').filter(Boolean)" :key="tag">{{tag}}</text><text v-if="item.sentiment" class="sentiment" :class="item.sentiment==='利好'?'up':'down'">{{item.sentiment}}</text></view>
+      <view class="detail-tags"><text v-if="item.level && item.level!=='普通'" class="urgent-tag">{{t(item.level)}}</text><text v-for="tag in item.tags.split(' ').filter(Boolean)" :key="tag">{{tag}}</text><text v-if="item.sentiment && item.sentiment!=='中性'" class="sentiment" :class="item.sentiment==='利好'?'up':'down'">{{t(item.sentiment)}}</text></view>
       <view class="detail-title">{{item.title || t('未命名资讯')}}</view>
       <view class="detail-meta"><text>{{t('来源：')}}{{item.source || t('未知来源')}}</text><text>{{item.time || ''}}</text></view>
       <view class="detail-body">{{item.body || item.content || item.summary || t('暂无正文')}}</view>

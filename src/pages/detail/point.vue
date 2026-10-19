@@ -21,17 +21,20 @@ onMounted(async () => {
   const page: any = getCurrentPages().at(-1)
   try {
     item.value = await api.pointById(page?.options?.id || '')
-    favorite.value = await api.isFavorite(item.value.id, 'points')
-    channels.value = await api.contacts()
   } catch (e: any) {
     error.value = e?.message || t('点位加载失败')
   } finally {
     loading.value = false
   }
+  if (item.value) {
+    try { favorite.value = await api.isFavorite(item.value.id, 'points') } catch {}
+    try { channels.value = await api.contacts() } catch {}
+  }
 })
 
 async function toggle() {
   if (!item.value) return
+  if (!store.token) return uni.reLaunch({ url: '/pages/index/index?auth=login' })
   favorite.value = await api.toggleFavorite(item.value.id, 'points', !favorite.value)
   uni.showToast({ title: favorite.value ? t('已收藏') : t('已取消收藏'), icon: 'none' })
 }
