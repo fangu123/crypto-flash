@@ -220,6 +220,10 @@ async function resendCode() { if (countdown.value || !email.value.trim()) return
 .market-tile .muted,.market-tile .up,.market-tile .down{font-size:17rpx}
 .market-tile .price{font-size:19rpx;margin:3rpx 0}
 </style>
+<style scoped>
+.login-page{padding-top:calc(16px + var(--cf-safe-top))}
+.login-top{min-height:52rpx}
+</style>
 <style scoped>.wallet-address{box-sizing:border-box;width:80%;height:72rpx;margin-top:18rpx;padding:0 18rpx;border:1rpx solid var(--cf-line);border-radius:14rpx;background:var(--cf-input);font-size:22rpx}</style>
 <style scoped>
 .login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-icon{display:block;width:48rpx;height:48rpx;flex:0 0 48rpx}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}
