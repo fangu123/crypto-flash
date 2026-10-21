@@ -13,14 +13,13 @@ import '../../styles/app.scss'
 const store = useSessionStore()
 const tab = ref<'login'|'wallet'>('login')
 const email = ref('')
-const code = ref('')
+const password = ref('')
 const twoFactorCode = ref('')
 const walletAddress = ref('')
 const chainId = ref('56')
 const requires2fa = ref(false)
 const accepted = ref(false)
 const trusted = ref(false)
-const countdown = ref(0)
 const loading = ref(false)
 const home = ref<any>(null)
 const news = ref<any[]>([])
@@ -80,7 +79,7 @@ function skipLogin() { uni.removeStorageSync('cf_after_login'); showLogin.value 
 async function login() {
   if (tab.value === 'wallet') return loginWallet()
   if (!email.value.trim()) return uni.showToast({ title: t('请输入邮箱或用户名'), icon: 'none' })
-  if (tab.value === 'login' && !code.value.trim()) return uni.showToast({ title: t('请输入验证码'), icon: 'none' })
+  if (tab.value === 'login' && !password.value) return uni.showToast({ title: t('请输入密码'), icon: 'none' })
   if (requires2fa.value && !twoFactorCode.value.trim()) return uni.showToast({ title: t('请输入 2FA 验证码'), icon: 'none' })
   if (!accepted.value) return uni.showToast({ title: t('请先同意协议'), icon: 'none' })
   if (!requires2fa.value) {
@@ -96,15 +95,15 @@ async function login() {
   loading.value = true
   let loginSucceeded = false
   try {
-    const result: any = await api.loginByCode(email.value.trim(), code.value.trim(), twoFactorCode.value.trim() || '')
+    const result: any = await api.loginByPassword(email.value.trim(), password.value, twoFactorCode.value.trim() || undefined)
     if (!result?.token) throw new Error(t('登录响应缺少 token'))
     store.login(result.token)
     uni.setStorageSync('cf_remember', trusted.value)
     loginSucceeded = true
-    recordAppLog('login.captcha', 'success', t('验证码登录成功'))
+    recordAppLog('login.password', 'success', t('账号密码登录成功'))
     requires2fa.value = false
   } catch (error: any) {
-    recordAppLog('login.captcha', 'failure', error?.message || t('登录失败'))
+    recordAppLog('login.password', 'failure', error?.message || t('登录失败'))
     uni.showToast({ title: error?.message || t('登录失败'), icon: 'none' })
   } finally { loading.value = false }
   if (loginSucceeded) {
@@ -144,7 +143,6 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
     await openOAuthUrl(authUrl)
   } catch (error: any) { uni.showToast({ title: error?.message || t('授权发起失败'), icon: 'none' }) }
 }
-async function resendCode() { if (countdown.value || !email.value.trim()) return uni.showToast({ title: t('请输入邮箱'), icon: 'none' }); try { await api.sendLoginCode(email.value.trim(), 3); countdown.value = 60; const timer = setInterval(() => { countdown.value -= 1; if (!countdown.value) clearInterval(timer) }, 1000) } catch (error: any) { uni.showToast({ title: error?.message || t('验证码发送失败'), icon: 'none' }) } }
 </script>
 <template>
   <view class="page" :class="{ 'login-route': showLogin }">
@@ -155,9 +153,9 @@ async function resendCode() { if (countdown.value || !email.value.trim()) return
         <view class="login-tabs"><text :class="{active:tab==='login'}" @click="tab='login'">◎　{{t('账号登录')}}</text><text :class="{active:tab==='wallet'}" @click="tab='wallet'">◇　{{t('钱包连接')}}</text></view>
         <view v-if="tab==='login'" class="login-form">
           <view class="field"><text class="field-label">{{t('邮箱 / 用户名')}}</text><view class="field-control"><input v-model="email" :placeholder="t('请输入邮箱或用户名')"/><text class="field-icon">✉</text></view></view>
-          <view class="field"><view class="field-label-row"><text class="field-label">{{t('动态验证码')}}</text><text class="resend-hint">{{countdown ? `${countdown}s ${t('后可重发')}` : t('未获取验证码')}}</text></view><view class="code-row"><view class="field-control"><input v-model="code" :placeholder="t('请输入 6 位验证码')" maxlength="6"/></view><button class="resend-button" :disabled="!!countdown" @click="resendCode">{{countdown ? `${countdown}s` : t('重发验证码')}}</button></view></view>
+          <view class="field"><text class="field-label">{{t('密码')}}</text><view class="field-control"><input v-model="password" password :placeholder="t('请输入密码')"/></view></view>
           <view v-if="requires2fa" class="field"><text class="field-label">{{t('2FA 验证码')}}</text><view class="field-control"><input v-model="twoFactorCode" :placeholder="t('请输入身份验证器验证码')" maxlength="6"/></view></view>
-          <view class="login-options"><label><checkbox :checked="trusted" @click="trusted=!trusted"/><text>{{t('保持信任登录 (30天)')}}</text></label><text class="forgot-link" @click="uni.navigateTo({url:'/pages/auth/forgot'})">{{t('忘记密码?')}}</text></view>
+          <view class="login-options"><label><checkbox :checked="trusted" @click="trusted=!trusted"/><text>{{t('保持信任登录 (30天)')}}</text></label><view class="account-links"><text @click="uni.navigateTo({url:'/pages/auth/register'})">{{t('注册')}}</text><text class="forgot-link" @click="uni.navigateTo({url:'/pages/auth/forgot'})">{{t('忘记密码?')}}</text></view></view>
         </view>
         <view v-else class="wallet-panel"><image class="wallet-icon" :src="walletLogo" mode="aspectFit"/><text class="wallet-title">{{t('连接钱包登录')}}</text><input v-model="walletAddress" class="wallet-address" :placeholder="t('输入钱包地址')"/><input v-model="chainId" class="wallet-address" :placeholder="t('链 ID，例如 56')"/><button class="wallet-button" @click="tab='login'">{{t('返回账号登录')}}</button></view>
         <button class="login-button" :disabled="loading" @click="login">{{loading ? t('正在进入...') : tab === 'wallet' ? t('连接钱包并登录') : t('进入交易终端 · 探索点位')}} <text>→</text></button>
@@ -224,6 +222,7 @@ async function resendCode() { if (countdown.value || !email.value.trim()) return
 .login-page{padding-top:calc(16px + var(--cf-safe-top))}
 .login-top{min-height:52rpx}
 </style>
+<style scoped>.account-links{display:flex;align-items:center;gap:18rpx;white-space:nowrap}.account-links text{color:var(--cf-brand)}</style>
 <style scoped>.wallet-address{box-sizing:border-box;width:80%;height:72rpx;margin-top:18rpx;padding:0 18rpx;border:1rpx solid var(--cf-line);border-radius:14rpx;background:var(--cf-input);font-size:22rpx}</style>
 <style scoped>
 .login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-icon{display:block;width:48rpx;height:48rpx;flex:0 0 48rpx}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}

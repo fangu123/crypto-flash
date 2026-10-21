@@ -12,6 +12,8 @@ const translations: Record<string, string> = Object.assign({}, {
   '查看全部 ›': 'View all ›', '更多 ›': 'More ›', '实时数据': 'Live data', '热门快讯': 'Top stories',
   '多方': 'Long', '空方': 'Short', '多方主导': 'Longs dominate', '重要财经日历': 'Economic calendar',
   '账号登录': 'Account login', '钱包连接': 'Connect wallet', '跳过': 'Skip', '登录': 'Sign in', '注册': 'Sign up', '游客模式': 'Guest mode', '登录后同步收藏与个人设置': 'Sign in to sync saved items and settings', '专业级加密资讯与高胜率策略终端': 'Professional crypto insights and trading signals',
+  '语言设置': 'Language', '简体中文': 'Simplified Chinese',
+  '密码': 'Password', '请输入密码': 'Enter your password', '账号密码登录成功': 'Password sign-in succeeded',
   '邮箱 / 用户名': 'Email / username', '请输入邮箱或用户名': 'Enter your email or username', '动态验证码': 'Verification code',
   '未获取验证码': 'No code requested', '重发验证码': 'Resend code', '请输入 6 位验证码': 'Enter 6-digit code',
   '2FA 验证码': '2FA code', '请输入身份验证器验证码': 'Enter your authenticator code', '保持信任登录 (30天)': 'Keep me signed in (30 days)',
