@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { onShareAppMessage } from '@dcloudio/uni-app'
 import { api } from '../../api'
 import { useSessionStore } from '../../store/session'
-import { t } from '../../locales'
+import { locale, t } from '../../locales'
 import '../../styles/app.scss'
 
 const item = ref<any>()
@@ -17,7 +17,9 @@ const selectedChannel = ref(0)
 const store = useSessionStore()
 const targets = computed(() => Array.isArray(item.value?.tpLevels) ? item.value.tpLevels : String(item.value?.tp || '').split(' / ').filter(Boolean))
 
-onMounted(async () => {
+async function load() {
+  loading.value = true
+  error.value = ''
   const page: any = getCurrentPages().at(-1)
   try {
     item.value = await api.pointById(page?.options?.id || '')
@@ -30,7 +32,10 @@ onMounted(async () => {
     try { favorite.value = await api.isFavorite(item.value.id, 'points') } catch {}
     try { channels.value = await api.contacts() } catch {}
   }
-})
+}
+
+onMounted(load)
+watch(locale, load)
 
 async function toggle() {
   if (!item.value) return

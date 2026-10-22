@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useSessionStore } from '../../store/session'
 import { api } from '../../api'
 import { locale, t } from '../../locales'
@@ -7,7 +7,9 @@ import '../../styles/app.scss'
 
 const store = useSessionStore()
 const profile = ref<any>({})
-onMounted(async () => { if (store.token) { try { profile.value = await api.profile() } catch {} } })
+async function loadProfile() { if (store.token) { try { profile.value = await api.profile() } catch {} } }
+onMounted(loadProfile)
+watch(locale, loadProfile)
 function theme() { const modes = ['light', 'dark', 'system']; store.setTheme(modes[(modes.indexOf(store.theme) + 1) % modes.length]); uni.showToast({ title: t('主题已切换'), icon: 'none' }) }
 const themeName = computed(() => store.theme === 'dark' ? t('深色模式') : store.theme === 'system' ? t('跟随系统') : t('浅色模式'))
 const languageName = computed(() => locale.value === 'zh' ? t('简体中文') : 'English')

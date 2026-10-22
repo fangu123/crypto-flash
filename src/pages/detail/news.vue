@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { onShareAppMessage } from '@dcloudio/uni-app'
 import { api } from '../../api'
 import { useSessionStore } from '../../store/session'
-import { t } from '../../locales'
+import { locale, t } from '../../locales'
 import '../../styles/app.scss'
 
 const store = useSessionStore()
@@ -12,7 +12,9 @@ const favorite = ref(false)
 const loading = ref(true)
 const error = ref('')
 
-onMounted(async () => {
+async function load() {
+  loading.value = true
+  error.value = ''
   const page: any = getCurrentPages().at(-1)
   const id = String(page?.options?.id || '')
   if (!store.token) {
@@ -30,7 +32,10 @@ onMounted(async () => {
   if (item.value) {
     try { favorite.value = await api.isFavorite(item.value.id, 'news') } catch {}
   }
-})
+}
+
+onMounted(load)
+watch(locale, load)
 
 async function toggle() {
   if (!item.value) return

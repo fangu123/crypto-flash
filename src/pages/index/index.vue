@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { api } from '../../api'
 import { useSessionStore } from '../../store/session'
@@ -33,6 +33,7 @@ async function loadHome() {
     recordAppLog('home.load', 'failure', error?.message || t('首页数据加载失败'))
   }
 }
+watch(locale, () => { if (!showLogin.value) loadHome() })
 onMounted(async () => {
   const current = getCurrentPages().at(-1) as any
   const options = current?.options || {}
