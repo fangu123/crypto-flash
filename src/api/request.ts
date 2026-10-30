@@ -126,3 +126,47 @@ export async function request<T = any>(path: string, options: RequestOptions = {
   }
   return payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload
 }
+
+export async function uploadFile(path: string, filePath: string, name = 'file'): Promise<any> {
+  const startedAt = Date.now()
+  const requestUrl = apiUrl(path)
+  const token = uni.getStorageSync('cf_token')
+  const header: Record<string, string> = { 'Accept-Language': locale.value === 'zh' ? 'cn' : 'en' }
+  if (API_EQUIPMENT) header['Equipment-Number'] = API_EQUIPMENT
+  if (token) header.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+
+  if (API_MODE === 'mock') {
+    const payload = await mockRequest(path, { method: 'POST', data: { filePath, name } })
+    recordApiLog({ method: 'POST', endpoint: path, outcome: 'success', requestUrl: `[MOCK] ${requestUrl}`, requestHeaders: header, requestBody: { filePath, name }, responseBody: payload, durationMs: Date.now() - startedAt, message: 'MOCK 响应（未请求后端）' })
+    return payload
+  }
+
+  let response: UniApp.UploadFileSuccessCallbackResult
+  try {
+    response = await new Promise<UniApp.UploadFileSuccessCallbackResult>((resolve, reject) => {
+      uni.uploadFile({ url: requestUrl, filePath, name, header, success: resolve, fail: reject })
+    })
+  } catch (error: any) {
+    const message = error?.errMsg || error?.message || t('图片上传失败')
+    recordApiLog({ method: 'POST', endpoint: path, outcome: 'network_error', failureSource: 'network', requestUrl, requestHeaders: header, durationMs: Date.now() - startedAt, message, errorDetail: errorDetails(error) })
+    throw new ApiError(message)
+  }
+
+  let payload: any = response.data
+  if (typeof payload === 'string') {
+    try { payload = JSON.parse(payload) } catch {}
+  }
+  const businessCode = payload && typeof payload === 'object' && 'code' in payload ? payload.code : undefined
+  const outcome = response.statusCode < 200 || response.statusCode >= 300
+    ? 'http_error'
+    : businessCode !== undefined && businessCode !== 200 ? 'api_error' : 'success'
+  recordApiLog({ method: 'POST', endpoint: path, outcome, failureSource: outcome === 'http_error' ? 'http' : outcome === 'api_error' ? 'business' : undefined, requestUrl, requestHeaders: header, responseBody: payload, durationMs: Date.now() - startedAt, httpStatus: response.statusCode, code: businessCode, message: messageFrom(payload, '') })
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw new ApiError(messageFrom(payload, `${t('请求失败')} (${response.statusCode})`), response.statusCode, businessCode)
+  }
+  if (businessCode !== undefined && businessCode !== 200) {
+    throw new ApiError(messageFrom(payload, t('图片上传失败')), response.statusCode, businessCode)
+  }
+  return payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload
+}

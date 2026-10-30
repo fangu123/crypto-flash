@@ -1,4 +1,5 @@
-import { request } from './request'
+import { request, uploadFile } from './request'
+import { locale } from '../locales'
 
 const path = (template: string, id: string | number) => template.replace('{id}', encodeURIComponent(String(id)))
 const unwrapList = (value: any): any[] => Array.isArray(value) ? value : value?.list || value?.records || value?.items || value?.data || []
@@ -34,16 +35,20 @@ function truncate(text: string, max = 80): string {
 }
 
 function normalizeNews(row: any): any {
-  const body = stripHtml(row.content || row.summary || row.description || '')
+  const english = locale.value === 'en'
+  const title = english ? (row.enTitle || row.title || row.name || '') : (row.title || row.enTitle || row.name || '')
+  const content = english ? (row.enContent || row.content || row.summary || row.description || '') : (row.content || row.summary || row.description || row.enContent || '')
+  const tagValue = english ? (row.enTagName || row.tagName || row.tags || row.tagNames || '') : (row.tagName || row.tags || row.tagNames || row.enTagName || '')
+  const body = stripHtml(content)
   return {
     ...row,
     id: String(row.id ?? row.newsId ?? ''),
-    title: row.title || row.name || '',
+    title,
     summary: truncate(body) || row.summary || '',
     body,
     source: row.source || row.author || '',
     time: row.time || dateText(row.publishedAt || row.createdAt || row.created_at || row.publishTime),
-    tags: String(row.tagName || row.tags || row.tagNames || '').split(',').map((s: string) => s.trim()).filter(Boolean).join(' '),
+    tags: String(tagValue).split(',').map((s: string) => s.trim()).filter(Boolean).join(' '),
     level: NEWS_LEVEL[row.level] || row.level || '',
     sentiment: NEWS_SENTIMENT[row.sentiment] || row.sentiment || '',
   }
@@ -183,7 +188,7 @@ export const api = {
   markAllMessagesRead: async () => { const rows = await api.messages({ isRead: 2, page: 1, size: 100 }); await Promise.all(rows.map((x: any) => api.markMessageRead(x.id))); return rows },
   markMessageRead: (id: string) => request(path('/app/profile/markMessageRead/{id}', id), { method: 'POST' }),
   myCollection: async () => request<any>('/app/profile/myCollection'),
-  contacts: async () => unwrapList(await request('/app/profile/contact')).map((x: any) => ({ type: x.name || x.customerName || x.type || '客服', account: x.email || x.phone || x.account || '', qr: x.qr || x.qrCode || '' })),
+  contacts: async () => unwrapList(await request('/app/profile/contact')).map((x: any) => ({ type: x.name || x.customerName || x.type || '客服', account: x.account || x.phone || x.email || x.customerName || '', qr: x.qr || x.qrCode || '' })),
   appVersion: () => request('/app/profile/appVersion'),
   changePassword: (data: any) => request('/app/profile/password', { method: 'POST', data }),
   notifications: async () => { const data: any = await request('/app/profile/messageSettingList'); return [1, 2, 3, 4].map((i) => Boolean(data?.[i] ?? data?.[String(i)])) },
@@ -202,6 +207,7 @@ export const api = {
   toggleFavorite: async (id: string, type: 'news' | 'points' = 'news', value?: boolean) => { const next = value ?? !(await api.isFavorite(id, type)); await (type === 'news' ? api.favoriteNews(id, next) : api.favoritePoint(id, next)); return next },
   profile: async () => request('/app/profile/personalInfo'),
   updatePersonalInfo: (data: any) => request('/app/profile/updatePersonalInfo', { method: 'POST', data }),
+  uploadProfileImage: (filePath: string) => uploadFile('/public/uploadFile', filePath, 'file'),
   markets: async () => unwrapList(await request('/app/home/market-overview')).map(normalizeMarket),
   refreshToken: (isRemember = true) => request<any>('/app/profile/refreshToken', { method: 'POST', data: { isRemember }, skipRefresh: true }),
   staticContent: async (kind: string) => {

@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { api } from '../../api'
 import { useSessionStore } from '../../store/session'
-import { t, locale, toggleLocale } from '../../locales'
+import { t, locale, toggleLocale, syncTabBarLocale } from '../../locales'
 import { recordAppLog } from '../../api/diagnostics'
 import googleLogo from '../../img/gogeimages.png'
 import microsoftLogo from '../../img/Microsoft_Logo_512px.png'
@@ -14,6 +14,7 @@ const store = useSessionStore()
 const tab = ref<'login'|'wallet'>('login')
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const twoFactorCode = ref('')
 const walletAddress = ref('')
 const chainId = ref('56')
@@ -21,17 +22,38 @@ const requires2fa = ref(false)
 const accepted = ref(false)
 const trusted = ref(false)
 const loading = ref(false)
-const home = ref<any>(null)
-const news = ref<any[]>([])
+const HOME_CACHE_KEY = 'cf_home_cache'
+function readHomeCache(): any {
+  try {
+    const cached = uni.getStorageSync(HOME_CACHE_KEY)
+    return cached && typeof cached === 'object' ? cached : null
+  } catch { return null }
+}
+const cachedHome = readHomeCache()
+const home = ref<any>(cachedHome)
+const news = ref<any[]>(cachedHome?.news || [])
+const homeLoading = ref(!cachedHome)
 const homeTab = ref<'featured'|'calendar'|'data'>('featured')
 const showLogin = ref(true)
 async function loadHome() {
+  homeLoading.value = !home.value
   try {
-    home.value = await api.home()
-    news.value = home.value.news || await api.news()
+    const nextHome = await api.home()
+    const nextNews = nextHome.news || await api.news()
+    home.value = { ...nextHome, news: nextNews }
+    news.value = nextNews
+    uni.setStorageSync(HOME_CACHE_KEY, home.value)
   } catch (error: any) {
     recordAppLog('home.load', 'failure', error?.message || t('首页数据加载失败'))
-  }
+  } finally { homeLoading.value = false }
+}
+const hasUnread = ref(false)
+async function loadUnreadStatus() {
+  if (!store.token) { hasUnread.value = false; return }
+  try {
+    const rows = await api.messages({ isRead: 2, page: 1, size: 1 })
+    hasUnread.value = Array.isArray(rows) && rows.length > 0
+  } catch { hasUnread.value = false }
 }
 watch(locale, () => { if (!showLogin.value) loadHome() })
 onMounted(async () => {
@@ -60,12 +82,12 @@ onMounted(async () => {
       store.login(result.token)
       uni.setStorageSync('cf_remember', trusted.value)
       showLogin.value = false
-      uni.showTabBar(); await loadHome()
+      uni.showTabBar(); await loadHome(); loadUnreadStatus()
       continueAfterLogin()
     } catch (error: any) { uni.showToast({ title: error?.message || t('第三方登录失败'), icon: 'none' }) }
-  } else if (!showLogin.value) { await loadHome() }
+  } else if (!showLogin.value) { uni.showTabBar(); await loadHome(); loadUnreadStatus() }
 })
-onShow(() => { if (showLogin.value) uni.hideTabBar(); else uni.showTabBar() })
+onShow(() => { syncTabBarLocale(); if (showLogin.value) uni.hideTabBar(); else { uni.showTabBar(); loadUnreadStatus() } })
 function continueAfterLogin() {
   const target = uni.getStorageSync('cf_after_login')
   if (target === 'points') {
@@ -112,6 +134,7 @@ async function login() {
     showLogin.value = false
     try {
       await loadHome()
+      loadUnreadStatus()
       recordAppLog('login.home-load', 'success', t('首页数据加载成功'))
     } catch (error: any) {
       recordAppLog('login.home-load', 'failure', error?.message || t('首页数据加载失败'))
@@ -131,7 +154,7 @@ async function loginWallet() {
     store.login(result.token)
     uni.setStorageSync('cf_remember', trusted.value)
     showLogin.value = false
-    uni.showTabBar(); await loadHome()
+    uni.showTabBar(); await loadHome(); loadUnreadStatus()
     continueAfterLogin()
   } catch (error: any) { uni.showToast({ title: error?.message || t('钱包登录失败'), icon: 'none' }) } finally { loading.value = false }
 }
@@ -154,7 +177,7 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
         <view class="login-tabs"><text :class="{active:tab==='login'}" @click="tab='login'">◎　{{t('账号登录')}}</text><text :class="{active:tab==='wallet'}" @click="tab='wallet'">◇　{{t('钱包连接')}}</text></view>
         <view v-if="tab==='login'" class="login-form">
           <view class="field"><text class="field-label">{{t('邮箱 / 用户名')}}</text><view class="field-control"><input v-model="email" :placeholder="t('请输入邮箱或用户名')"/><text class="field-icon">✉</text></view></view>
-          <view class="field"><text class="field-label">{{t('密码')}}</text><view class="field-control"><input v-model="password" password :placeholder="t('请输入密码')"/></view></view>
+          <view class="field"><text class="field-label">{{t('密码')}}</text><view class="field-control"><input v-model="password" :password="!showPassword" :placeholder="t('请输入密码')"/><text class="password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" @click.stop="showPassword=!showPassword"><svg v-if="showPassword" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.3A10.7 10.7 0 0 1 12 5c5.1 0 8.6 4.4 9.8 7a15 15 0 0 1-3.1 4.1M6.1 6.1A15.2 15.2 0 0 0 2.2 12c1.2 2.6 4.7 7 9.8 7 1.3 0 2.5-.3 3.6-.8"/></svg><svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12C3.4 9.4 6.9 5 12 5s8.6 4.4 9.8 7c-1.2 2.6-4.7 7-9.8 7S3.4 14.6 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg></text></view></view>
           <view v-if="requires2fa" class="field"><text class="field-label">{{t('2FA 验证码')}}</text><view class="field-control"><input v-model="twoFactorCode" :placeholder="t('请输入身份验证器验证码')" maxlength="6"/></view></view>
           <view class="login-options"><label><checkbox :checked="trusted" @click="trusted=!trusted"/><text>{{t('保持信任登录 (30天)')}}</text></label><view class="account-links"><text @click="uni.navigateTo({url:'/pages/auth/register'})">{{t('注册')}}</text><text class="forgot-link" @click="uni.navigateTo({url:'/pages/auth/forgot'})">{{t('忘记密码?')}}</text></view></view>
         </view>
@@ -166,19 +189,20 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
       <text class="login-risk">{{t('资产与市场波动剧烈，交易前请独立研究 (DYOR)')}}</text>
     </view>
     <view v-else class="home-content">
-      <view class="row"><view class="brand"><view class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></view><text>Crypto Flash</text></view><image class="bell-icon" src="/static/bell-notice.svg" mode="aspectFit" aria-label="通知" @click="uni.navigateTo({url:'/pages/me/messages'})"/></view>
-      <view class="input search" @click="uni.navigateTo({url:'/pages/search/index'})">⌕ {{t('搜索新闻、币种、项目...')}}</view>
+      <view class="row"><view class="brand"><view class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></view><text>Crypto Flash</text></view><view class="bell-wrap" aria-label="通知" @click="uni.navigateTo({url:'/pages/me/messages'})"><image class="bell-icon" src="/static/bell.svg" mode="aspectFit"/><view v-if="hasUnread" class="bell-dot"></view></view></view>
+      <view class="input search" @click="uni.navigateTo({url:'/pages/search/index'})"><svg class="search-symbol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>{{t('搜索新闻、币种、项目...')}}</view>
       <view class="tabs"><text :class="['tab',{active:homeTab==='featured'}]" @click="homeTab='featured'">{{t('精选')}}</text><text :class="['tab',{active:homeTab==='calendar'}]" @click="homeTab='calendar'">{{t('日历')}}</text><text :class="['tab',{active:homeTab==='data'}]" @click="homeTab='data'">{{t('数据')}}</text><text class="tab" @click="uni.navigateTo({url:'/pages/me/markets'})">{{t('更多')}}</text></view>
-      <view v-if="homeTab === 'featured' || homeTab === 'data'" class="card"><view class="row"><text class="title card-title">{{t('多空比 (BTC)')}}</text><text class="muted home-action-link">{{t('更多 ›')}}</text></view><view v-if="home" class="ratio"><view><text class="up">{{t('多方')}}</text><text class="title up">{{home.ratio.long}}%</text></view><view class="gauge"><text class="title">{{home.ratio.value}}</text><text class="muted">{{t('多方主导')}}</text></view><view><text class="down">{{t('空方')}}</text><text class="title down">{{home.ratio.short}}%</text></view></view><view v-if="home" class="bar"><view :style="{width:home.ratio.long+'%'}"></view></view></view>
-      <view v-if="(homeTab === 'featured' || homeTab === 'calendar') && home?.calendar?.length" class="calendar-card"><view class="row"><text class="title card-title">{{t('重要财经日历')}}</text><text class="muted home-action-link">{{t('实时数据')}}</text></view><view v-for="(event,index) in home.calendar.slice(0,3)" :key="event.id || index" class="calendar-row"><view class="calendar-date">{{event.date || event.time || event.eventTime || '--'}}</view><view class="calendar-copy"><text class="calendar-title">{{event.title || event.name || event.event || t('财经事件')}}</text><text class="muted">{{event.country || event.region || event.currency || ''}}</text></view><text class="calendar-impact">{{event.impact ? t(event.impact) : (event.level || '')}}</text></view></view>
+      <view v-if="homeTab === 'featured' || homeTab === 'data'" class="card"><view class="row"><text class="title card-title">{{t('多空比 (BTC)')}}</text><text class="muted home-action-link">{{t('更多 ›')}}</text></view><view v-if="home" class="ratio"><view><text class="up">{{t('多方')}}</text><text class="title up">{{home.ratio.long}}%</text></view><view class="gauge"><text class="title">{{home.ratio.value}}</text><text class="muted">{{t('多方主导')}}</text></view><view><text class="down">{{t('空方')}}</text><text class="title down">{{home.ratio.short}}%</text></view></view><view v-else class="home-skeleton ratio-skeleton"><i></i><i></i><i></i></view><view v-if="home" class="bar"><view :style="{width:home.ratio.long+'%'}"></view></view><view class="exchange-ratios"><text>OKX: 1.33</text><i></i><text>币安: 1.40</text></view></view>
+      <view v-if="homeTab === 'calendar'" class="calendar-card"><view class="row"><text class="title card-title">{{t('重要财经日历')}}</text><text class="muted home-action-link">{{t('实时数据')}}</text></view><view v-if="home?.calendar?.length" v-for="(event,index) in home.calendar.slice(0,3)" :key="event.id || index" class="calendar-row"><view class="calendar-date">{{event.date || event.time || event.eventTime || '--'}}</view><view class="calendar-copy"><text class="calendar-title">{{event.title || event.name || event.event || t('财经事件')}}</text><text class="muted">{{event.country || event.region || event.currency || ''}}</text></view><text class="calendar-impact">{{event.impact ? t(event.impact) : (event.level || '')}}</text></view><view v-else v-for="index in 3" :key="`calendar-skeleton-${index}`" class="calendar-row calendar-skeleton"><view></view><view></view><view></view></view></view>
       <view class="row section-head"><text class="title card-title">{{t('热门快讯')}}</text><text class="muted home-action-link" @click="uni.switchTab({url:'/pages/flash/list'})">{{t('查看全部 ›')}}</text></view>
-      <view class="home-news-list"><view v-for="(item,index) in news.slice(0,3)" :key="item.id" class="home-news-card" @click="uni.navigateTo({url:'/pages/detail/news?id='+item.id})"><image class="news-thumb" :src="`/static/home-news-${index+1}.jpg`" mode="aspectFill"/><view class="home-news-copy"><view class="title news-title">{{item.title}}</view><view class="muted">{{item.time}} · {{item.source}}</view></view></view></view>
-      <view class="row section-head"><text class="title card-title">{{t('市场行情')}}</text><text class="muted home-action-link" @click="uni.navigateTo({url:'/pages/me/markets'})">{{t('更多 ›')}}</text></view><view class="market-grid"><view v-for="coin in home?.coins" :key="coin[0]" class="market-tile"><text class="muted">{{coin[0]}}</text><text class="title price">{{coin[1]}}</text><text :class="coin[2].startsWith('+')?'up':'down'">{{coin[2]}}</text></view></view>
+      <view class="home-news-list"><view v-if="!news.length" v-for="index in 3" :key="`news-skeleton-${index}`" class="home-news-card home-skeleton news-skeleton"><i></i><view><i></i><i></i></view></view><view v-for="(item,index) in news.slice(0,3)" :key="item.id" class="home-news-card" @click="uni.navigateTo({url:'/pages/detail/news?id='+item.id})"><image class="news-thumb" :src="`/static/home-news-${index+1}.jpg`" mode="aspectFill"/><view class="home-news-copy"><view class="title news-title">{{item.title}}</view><view class="muted">{{item.time}} · {{item.source}}</view></view></view></view>
+      <view class="row section-head"><text class="title card-title">{{t('市场行情')}}</text><text class="muted home-action-link" @click="uni.navigateTo({url:'/pages/me/markets'})">{{t('更多 ›')}}</text></view><view class="market-grid"><view v-if="!home?.coins?.length" v-for="index in 4" :key="`market-skeleton-${index}`" class="market-tile home-skeleton market-skeleton"><i></i><i></i><i></i></view><view v-for="coin in home?.coins" :key="coin[0]" class="market-tile"><text class="muted">{{coin[0]}}</text><text class="title price">{{coin[1]}}</text><text :class="coin[2].startsWith('+')?'up':'down'">{{coin[2]}}</text></view></view>
     </view>
   </view>
 </template>
 <style scoped>.login-brand{justify-content:center;margin-top:90rpx}.center{text-align:center}.pro{font-size:20rpx;color:var(--cf-brand)}.agreement{margin:24rpx 0;font-size:22rpx;color:var(--cf-muted)}.auth-links{display:flex;justify-content:space-between;margin-top:16rpx}.wallet{text-align:center;padding:36rpx 0}.wallet-icon{font-size:52rpx;color:var(--cf-brand)}.small-title{font-size:28rpx;margin-top:10rpx}.bell{font-size:42rpx;color:var(--cf-brand)}.search{margin-top:28rpx}.card-title{font-size:28rpx}.section-head{margin:28rpx 0 14rpx}.news-title{font-size:27rpx;margin-bottom:10rpx}.market-card{padding:22rpx 26rpx;margin-bottom:14rpx}.price{font-size:26rpx}.input{height:78rpx;border:1rpx solid var(--cf-line);border-radius:16rpx;padding:0 22rpx;color:var(--cf-text)}.ratio{display:flex;justify-content:space-between;align-items:end;text-align:center;padding:45rpx 10rpx 24rpx}.ratio view{display:flex;flex-direction:column;gap:8rpx}.gauge{width:200rpx;height:100rpx;border:14rpx solid var(--cf-line);border-bottom:0;border-radius:200rpx 200rpx 0 0;justify-content:end!important}.bar{height:14rpx;background:var(--cf-down);border-radius:8rpx;overflow:hidden}.bar view{height:100%;background:var(--cf-up)}</style>
 <style scoped>.calendar-card{margin-top:18rpx;padding:20rpx;border:1rpx solid var(--cf-line);border-radius:16rpx;background:var(--cf-card)}.calendar-row{display:flex;align-items:center;gap:14rpx;padding:16rpx 0;border-top:1rpx solid #F1F5F9}.calendar-date{flex:0 0 112rpx;color:var(--cf-soft);font-size:19rpx}.calendar-copy{display:flex;flex:1;flex-direction:column;gap:4rpx;min-width:0}.calendar-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:22rpx;font-weight:700}.calendar-copy .muted{font-size:18rpx}.calendar-impact{color:var(--cf-brand);font-size:18rpx}</style>
+<style scoped>.calendar-skeleton>view{height:20rpx;border-radius:6rpx;background:var(--cf-surface)}.calendar-skeleton>view:first-child{flex:0 0 112rpx}.calendar-skeleton>view:nth-child(2){flex:1}.calendar-skeleton>view:last-child{flex:0 0 42rpx}</style>
 <style scoped>
 .login-page{min-height:calc(100vh - 64rpx);padding:8rpx 20rpx 24rpx;background:var(--cf-bg);color:var(--cf-text)}
 .login-top{display:flex;justify-content:space-between;align-items:center;height:52rpx}.login-tools{display:flex;align-items:center;gap:20rpx}.network-pill{display:flex;align-items:center;gap:8rpx;padding:6rpx 14rpx;border-radius:24rpx;background:var(--cf-surface);color:var(--cf-muted);font-size:20rpx}.status-dot{color:var(--cf-up);font-size:15rpx}.locale-switch{color:var(--cf-muted);font-size:20rpx}
@@ -220,11 +244,35 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 .market-tile .price{font-size:19rpx;margin:3rpx 0}
 </style>
 <style scoped>
+.password-toggle{display:flex;align-items:center;justify-content:center;flex:0 0 44rpx;width:44rpx;height:44rpx;color:var(--cf-muted)}
+.password-toggle svg{display:block;width:34rpx;height:34rpx;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+</style>
+<style scoped>
 .login-page{padding-top:calc(16px + var(--cf-safe-top))}
 .login-top{min-height:52rpx}
 </style>
 <style scoped>.account-links{display:flex;align-items:center;gap:18rpx;white-space:nowrap}.account-links text{color:var(--cf-brand)}</style>
 <style scoped>.wallet-address{box-sizing:border-box;width:80%;height:72rpx;margin-top:18rpx;padding:0 18rpx;border:1rpx solid var(--cf-line);border-radius:14rpx;background:var(--cf-input);font-size:22rpx}</style>
 <style scoped>
-.login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-icon{display:block;width:48rpx;height:48rpx;flex:0 0 48rpx}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}
+.home-content .search{box-sizing:border-box;height:72rpx;margin-top:22rpx;padding:0 24rpx;border:0;border-radius:36rpx;background:#F1F3F7;color:var(--cf-muted)}
+.home-content .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:18rpx 0 22rpx;padding:0;border-bottom:1rpx solid var(--cf-line)}
+.home-content .tab{position:relative;display:flex;align-items:center;justify-content:center;height:68rpx;padding:0;border:0;border-radius:0;background:transparent;color:var(--cf-text);font-size:25rpx;font-weight:600}
+.home-content .tab.active{background:transparent;color:var(--cf-brand);font-weight:700}
+.home-content .tab.active::after{position:absolute;right:28%;bottom:-1rpx;left:28%;height:4rpx;border-radius:4rpx;background:var(--cf-brand);content:''}
+.exchange-ratios{display:flex;align-items:center;justify-content:space-around;height:64rpx;margin-top:18rpx;border-top:1rpx solid var(--cf-divider);color:var(--cf-muted);font-size:23rpx}
+.exchange-ratios i{width:1rpx;height:28rpx;background:var(--cf-line)}
+.calendar-date{flex:0 0 190rpx;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:18rpx}
+.home-skeleton{position:relative;overflow:hidden;background:var(--cf-surface);border-color:transparent}
+.home-skeleton::after{position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:home-skeleton-shimmer 1.4s infinite;content:''}
+.ratio-skeleton{display:flex;align-items:flex-end;justify-content:space-between;height:184rpx;padding:28rpx 12rpx 16rpx}
+.ratio-skeleton i{display:block;width:92rpx;height:28rpx;border-radius:8rpx;background:var(--cf-line)}
+.ratio-skeleton i:nth-child(2){width:188rpx;height:108rpx;border-radius:188rpx 188rpx 0 0;background:var(--cf-line)}
+.news-skeleton{border-color:transparent}
+.news-skeleton>i{display:block;flex:0 0 80rpx;width:80rpx;height:80rpx;border-radius:10rpx;background:var(--cf-line)}
+.news-skeleton>view{display:flex;flex:1;flex-direction:column;gap:14rpx}.news-skeleton>view i{display:block;width:78%;height:22rpx;border-radius:6rpx;background:var(--cf-line)}.news-skeleton>view i:last-child{width:42%;height:16rpx}
+.market-skeleton{gap:8rpx}.market-skeleton i{display:block;width:70%;height:16rpx;border-radius:5rpx;background:var(--cf-line)}.market-skeleton i:nth-child(2){width:85%;height:22rpx}.market-skeleton i:last-child{width:55%;height:16rpx}
+@keyframes home-skeleton-shimmer{100%{transform:translateX(100%)}}
+</style>
+<style scoped>
+.login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-wrap{position:relative;display:block;flex:0 0 48rpx;width:48rpx;height:48rpx}.bell-wrap .bell-icon{display:block;width:48rpx;height:48rpx}.bell-dot{position:absolute;top:-2rpx;right:-2rpx;width:16rpx;height:16rpx;border-radius:50%;background:#2563EB;border:2rpx solid var(--cf-card)}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}
 </style>

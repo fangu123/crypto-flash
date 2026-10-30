@@ -103,6 +103,14 @@ export async function mockRequest<T = any>(path: string, options: RequestOptions
     case '/app/profile/myCollection': result = copy(get('favorites', [])); break
     case '/app/profile/contact': result = [{ type: 'Telegram', account: '@CryptoFlashDemo', qr: '' }, { type: 'Email', account: 'support@cryptoflash.example', qr: '' }]; break
     case '/app/profile/appVersion': result = { version: '1.0.0-demo', description: 'Crypto Flash 演示版\n本版本使用本地模拟数据，不代表实时市场行情。' }; break
+    case '/public/uploadFile': result = { url: data.filePath }; break
+    case '/app/profile/personalInfo': result = get('profile', { nickname: '演示用户', email: '' }); break
+    case '/app/profile/updatePersonalInfo': {
+      const current = get('profile', { nickname: '演示用户', email: '' })
+      set('profile', { ...current, ...data, nickname: data.username, walletAddress: data.walletAddress })
+      result = { success: true }
+      break
+    }
     case '/app/profile/messageList': {
       const rows = copy(get('messages', initialMessages))
       result = query.isRead === 0 || query.isRead === '0' ? rows.filter((row: any) => !row.read) : rows

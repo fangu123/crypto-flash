@@ -48,7 +48,7 @@ const translations: Record<string, string> = Object.assign({}, {
   '修改密码 / 2FA　›': 'Password / 2FA　›', '版本信息　›': 'Version info　›', '消息列表': 'Messages', '完整行情': 'Markets', '退出登录': 'Sign out',
   '个人资料': 'Profile', '未设置资料': 'Profile not set', '未绑定邮箱': 'Email not linked', '昵称': 'Nickname', '邮箱': 'Email', '邮箱验证码': 'Email verification code',
   '头像地址': 'Avatar URL', '钱包地址': 'Wallet address', '绑定钱包': 'Link wallet', '保存资料': 'Save profile', '保存中...': 'Saving...', '输入昵称': 'Enter nickname',
-  '输入邮箱': 'Enter email', '修改邮箱时填写': 'Required to change email', '输入头像 URL': 'Enter avatar URL', '请输入昵称和邮箱': 'Enter a nickname and email',
+  '输入邮箱': 'Enter email', '修改邮箱时填写': 'Required to change email', '输入头像 URL': 'Enter avatar URL', '更换头像': 'Change avatar', '上传中...': 'Uploading...', '头像上传成功': 'Avatar uploaded', '头像上传失败': 'Could not upload avatar', '图片上传失败': 'Could not upload image', '请输入昵称和邮箱': 'Enter a nickname and email',
   '资料已更新': 'Profile updated', '资料更新失败': 'Could not update profile', '资料加载失败': 'Could not load profile', '钱包绑定成功': 'Wallet linked', '钱包绑定失败': 'Could not link wallet',
   '暂无消息': 'No messages', '消息': 'Messages', '全部已读': 'Mark all as read', '已全部读': 'All messages marked read', '保存失败': 'Could not save',
   '重要新闻快讯': 'Important news', '新交易点位': 'New trading signal', '点位状态更新': 'Signal status update', '系统通知': 'System notifications',
@@ -74,12 +74,21 @@ const translations: Record<string, string> = Object.assign({}, {
 
 export function t(key: string) { return locale.value === 'zh' ? key : (translations[key] || key) }
 
+export function syncTabBarLocale() {
+  const labels = locale.value === 'zh' ? ['首页', '快讯', '点位', '我的'] : ['Home', 'Flash', 'Signals', 'Profile']
+  const paths = ['pages/index/index', 'pages/flash/list', 'pages/points/list', 'pages/me/index']
+  const currentPage = getCurrentPages().at(-1) as any
+  const currentPath = String(currentPage?.route || '').replace(/^\//, '')
+  if (!paths.includes(currentPath)) return
+  paths.forEach((pagePath, index) => {
+    Promise.resolve(uni.setTabBarItem({ index, pagePath, text: labels[index] })).catch(() => {})
+  })
+}
+
 export function setLocale(value: Locale) {
   locale.value = value
   uni.setStorageSync(storageKey, value)
-  const labels = value === 'zh' ? ['首页', '快讯', '点位', '我的'] : ['Home', 'Flash', 'Signals', 'Profile']
-  const paths = ['pages/index/index', 'pages/flash/list', 'pages/points/list', 'pages/me/index']
-  paths.forEach((pagePath, index) => uni.setTabBarItem({ index, pagePath, text: labels[index] }))
+  syncTabBarLocale()
 }
 
 export function restoreLocale() { setLocale(uni.getStorageSync(storageKey) === 'en' ? 'en' : 'zh') }

@@ -6,7 +6,7 @@ import '../../styles/app.scss'
 <template>
   <view class="inner-page language-page">
     <view class="inner-nav">
-      <text class="back" @click="uni.navigateBack()">‹</text>
+      <text class="back" @click="uni.navigateBack()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></text>
       <text class="nav-title">{{ t('语言设置') }}</text>
     </view>
     <view class="inner-main">

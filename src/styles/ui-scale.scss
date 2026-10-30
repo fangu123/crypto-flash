@@ -1,0 +1,646 @@
+/* Shared readability and touch sizing for screens with older local overrides. */
+page {
+  font-size: 28rpx;
+}
+
+.inner-main {
+  padding-top: 24rpx !important;
+  padding-bottom: 24rpx !important;
+}
+
+.inner-card {
+  padding: 20rpx !important;
+}
+
+.inner-card + .inner-card {
+  margin-top: 16rpx !important;
+}
+
+.inner-nav .nav-title,
+.notifications-nav,
+.content-title {
+  font-size: 30rpx !important;
+}
+
+.form-field {
+  margin-bottom: 18rpx !important;
+}
+
+.form-label,
+.field-label {
+  margin-bottom: 8rpx !important;
+  font-size: 25rpx !important;
+}
+
+.form-input,
+.field-control input {
+  height: 88rpx !important;
+  font-size: 28rpx !important;
+}
+
+.action-button,
+.ghost-button,
+.login-button,
+.wallet-button,
+.code-button,
+.resend-button,
+.bind-button,
+.clear-logs,
+.copy-log,
+.detail-actions button,
+.point-actions button,
+.dialog button {
+  min-height: 88rpx !important;
+  height: 88rpx !important;
+  font-size: 28rpx !important;
+  line-height: normal !important;
+}
+
+.primary,
+.outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx !important;
+  padding: 16rpx 20rpx !important;
+  font-size: 28rpx !important;
+}
+
+.inner-tabs {
+  gap: 10rpx !important;
+  margin-bottom: 18rpx !important;
+}
+
+.inner-tab,
+.tab,
+.flash-tab,
+.point-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx !important;
+  padding: 0 18rpx !important;
+  font-size: 25rpx !important;
+}
+
+.empty-state {
+  padding: 42rpx 20rpx !important;
+  font-size: 26rpx !important;
+}
+
+.list-card {
+  min-height: 88rpx !important;
+  padding: 18rpx !important;
+}
+
+.list-title {
+  font-size: 29rpx !important;
+}
+
+.list-meta,
+.settings-hint {
+  font-size: 23rpx !important;
+}
+
+.list-icon,
+.settings-icon {
+  width: 48rpx !important;
+  height: 48rpx !important;
+  flex-basis: 48rpx !important;
+  font-size: 28rpx !important;
+}
+
+.settings-row {
+  min-height: 88rpx !important;
+  padding: 8rpx 14rpx !important;
+}
+
+.settings-row > view {
+  font-size: 27rpx !important;
+}
+
+.read-only {
+  min-height: 88rpx !important;
+  font-size: 27rpx !important;
+}
+
+.notice {
+  padding: 14rpx 16rpx !important;
+  font-size: 24rpx !important;
+}
+
+.login-page {
+  justify-content: flex-start !important;
+}
+
+.login-page .network-pill,
+.login-page .locale-switch,
+.login-page .pro,
+.login-page .pro-badge,
+.login-page .login-subtitle,
+.login-page .resend-hint,
+.login-page .login-options,
+.login-page .divider,
+.login-page .third-actions view,
+.login-page .agreement,
+.login-page .login-risk,
+.login-page .wallet-copy {
+  font-size: 23rpx !important;
+}
+
+.login-page .field-control,
+.login-page .resend-button {
+  height: 88rpx !important;
+}
+
+.login-page .login-button,
+.login-page .wallet-button {
+  font-size: 28rpx !important;
+}
+
+.login-tabs {
+  font-size: 25rpx !important;
+}
+
+.login-tabs text {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 88rpx !important;
+}
+
+.account-links text,
+.forgot-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 88rpx !important;
+  font-size: 23rpx !important;
+}
+
+.login-options checkbox,
+.agreement checkbox {
+  transform: scale(1) !important;
+}
+
+.home-content .search {
+  height: 88rpx !important;
+  font-size: 27rpx !important;
+}
+
+.home-content .tabs {
+  gap: 10rpx !important;
+  margin: 16rpx 0 !important;
+}
+
+.home-content .tab {
+  font-size: 31rpx !important;
+}
+
+.home-content > .card {
+  padding: 18rpx !important;
+  margin-bottom: 16rpx !important;
+}
+
+.home-content .section-head {
+  margin: 18rpx 0 10rpx !important;
+}
+
+.home-news-card {
+  min-height: 120rpx !important;
+}
+
+.home-news-copy .news-title {
+  font-size: 27rpx !important;
+}
+
+.home-news-copy .muted,
+.market-tile .muted,
+.market-tile .up,
+.market-tile .down {
+  font-size: 23rpx !important;
+}
+
+.market-tile {
+  min-height: 112rpx !important;
+}
+
+.market-tile .price {
+  font-size: 25rpx !important;
+}
+
+.calendar-date,
+.calendar-copy .muted,
+.calendar-impact {
+  font-size: 23rpx !important;
+}
+
+.calendar-title {
+  font-size: 25rpx !important;
+}
+
+.flash-filter {
+  padding: 16rpx 24rpx !important;
+}
+
+.flash-list {
+  padding: 18rpx 24rpx !important;
+}
+
+.flash-item {
+  padding-bottom: 18rpx !important;
+  margin-bottom: 18rpx !important;
+}
+
+.flash-meta,
+.flash-foot {
+  font-size: 23rpx !important;
+}
+
+.flash-title {
+  font-size: 32rpx !important;
+}
+
+.flash-summary {
+  font-size: 27rpx !important;
+}
+
+.search-icon {
+  display: grid !important;
+  place-items: center !important;
+  flex-basis: 88rpx !important;
+  width: 88rpx !important;
+  height: 88rpx !important;
+}
+
+.points-page {
+  padding: calc(22rpx + var(--cf-safe-top)) 24rpx 112rpx !important;
+}
+
+.point-filters {
+  gap: 10rpx !important;
+  margin: 18rpx 0 !important;
+}
+
+.point-filter {
+  font-size: 25rpx !important;
+}
+
+.point-results {
+  gap: 14rpx !important;
+}
+
+.point-card {
+  padding: 18rpx !important;
+}
+
+.point-values {
+  font-size: 25rpx !important;
+}
+
+.direction,
+.status,
+.live-label,
+.sentiment {
+  font-size: 23rpx !important;
+}
+
+.fine,
+.secret,
+.modal-secondary,
+.flash-state {
+  font-size: 23rpx !important;
+}
+
+.point-card-foot,
+.point-state {
+  font-size: 23rpx !important;
+}
+
+.point-actions {
+  padding: 12rpx 20rpx calc(12rpx + env(safe-area-inset-bottom)) !important;
+}
+
+.point-actions > text {
+  font-size: 22rpx !important;
+}
+
+.detail-actions {
+  padding: 12rpx 20rpx calc(12rpx + env(safe-area-inset-bottom)) !important;
+}
+
+.detail-meta,
+.detail-tags,
+.contact-account {
+  font-size: 23rpx !important;
+}
+
+.detail-body,
+.content-body {
+  font-size: 28rpx !important;
+}
+
+.content-foot {
+  font-size: 23rpx !important;
+}
+
+.me-page {
+  padding-bottom: 120rpx !important;
+}
+
+.me-page .profile {
+  min-height: 160rpx !important;
+  padding: 24rpx 24rpx !important;
+}
+
+.me-page .avatar {
+  width: 76rpx !important;
+  height: 76rpx !important;
+  flex-basis: 76rpx !important;
+}
+
+.profile-name {
+  font-size: 32rpx !important;
+}
+
+.profile-email {
+  font-size: 24rpx !important;
+}
+
+.menu-group {
+  margin: 24rpx 20rpx 0 !important;
+}
+
+.me-page .menu {
+  min-height: 92rpx !important;
+  padding: 10rpx 14rpx !important;
+  font-size: 31rpx !important;
+}
+
+.menu-icon {
+  width: 48rpx !important;
+  height: 48rpx !important;
+  flex-basis: 48rpx !important;
+}
+
+.hint {
+  font-size: 23rpx !important;
+}
+
+.secondary-group {
+  margin-top: 24rpx !important;
+}
+
+.me-page .logout {
+  min-height: 88rpx !important;
+  margin-top: 18rpx !important;
+  font-size: 28rpx !important;
+}
+
+.notifications-nav {
+  height: calc(88rpx + var(--cf-safe-top)) !important;
+}
+
+.notification-list {
+  padding: 20rpx 24rpx !important;
+}
+
+.notification-row {
+  min-height: 88rpx !important;
+}
+
+.notification-row > view {
+  font-size: 27rpx !important;
+}
+
+.notification-icon {
+  width: 48rpx !important;
+  height: 48rpx !important;
+  font-size: 28rpx !important;
+}
+
+.notification-row switch {
+  transform: scale(1) !important;
+}
+
+.notification-help {
+  font-size: 23rpx !important;
+}
+
+.message-card {
+  gap: 12rpx !important;
+  padding: 16rpx !important;
+}
+
+.message-card + .message-card {
+  margin-top: 10rpx !important;
+}
+
+.nav-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 88rpx !important;
+  font-size: 23rpx !important;
+}
+
+.message-summary {
+  font-size: 24rpx !important;
+}
+
+.market-row {
+  min-height: 88rpx !important;
+  padding: 14rpx 16rpx !important;
+}
+
+.market-value {
+  font-size: 23rpx !important;
+}
+
+.language-option {
+  justify-content: space-between !important;
+  height: 96rpx !important;
+  font-size: 28rpx !important;
+}
+
+.contact-row {
+  min-height: 88rpx !important;
+  padding: 12rpx !important;
+}
+
+.contact-row + .contact-row {
+  margin-top: 10rpx !important;
+}
+
+.qr-placeholder {
+  font-size: 23rpx !important;
+}
+
+.bind-button {
+  min-width: 150rpx !important;
+  padding: 0 14rpx !important;
+}
+
+.search-bar {
+  height: 104rpx !important;
+  padding: 0 22rpx !important;
+  border-radius: 52rpx !important;
+}
+
+.search-bar > text:first-child {
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 52rpx !important;
+  width: 52rpx !important;
+  height: 64rpx !important;
+  font-size: 44rpx !important;
+}
+
+.search-bar input {
+  font-size: 27rpx !important;
+}
+
+.search-submit {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 88rpx !important;
+  min-height: 88rpx !important;
+  font-size: 25rpx !important;
+}
+
+.diagnostics-toolbar {
+  margin-bottom: 14rpx !important;
+}
+
+.diagnostic-row {
+  padding: 16rpx !important;
+}
+
+.diagnostic-row + .diagnostic-row {
+  margin-top: 10rpx !important;
+}
+
+.diagnostic-endpoint,
+.diagnostic-status,
+.diagnostic-message,
+.detail-label,
+.detail-value,
+.detail-payload {
+  font-size: 23rpx !important;
+}
+
+.diagnostic-meta {
+  gap: 10rpx !important;
+  font-size: 22rpx !important;
+}
+
+.diagnostic-detail {
+  margin-top: 14rpx !important;
+  padding: 14rpx !important;
+}
+
+.detail-hint {
+  font-size: 22rpx !important;
+}
+
+.register-card {
+  margin-top: 18rpx !important;
+}
+
+.agreement {
+  font-size: 23rpx !important;
+}
+
+.code-row {
+  gap: 8rpx !important;
+}
+
+.code-button {
+  flex-basis: 180rpx !important;
+}
+
+.point-values > view {
+  margin: 5rpx 0 !important;
+}
+
+.detail-body {
+  margin: 28rpx 0 !important;
+}
+
+.guest-actions text,
+.unlock-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 88rpx !important;
+  font-size: 25rpx !important;
+}
+
+.unlock-link {
+  gap: 10rpx !important;
+  min-width: 160rpx !important;
+  min-height: 64rpx !important;
+  height: 64rpx !important;
+  padding: 0 18rpx !important;
+  border: 1rpx solid #BFDBFE !important;
+  border-radius: 999rpx !important;
+  background: #EFF6FF !important;
+  font-size: 27rpx !important;
+  font-weight: 700 !important;
+}
+
+.points-header .live-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 52rpx !important;
+  padding: 5rpx 14rpx !important;
+  border-radius: 12rpx !important;
+}
+
+.inner-nav .back,
+.detail-nav > text:first-child,
+.point-nav > text:first-child,
+.notifications-nav > text:first-child {
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 88rpx !important;
+  width: 88rpx !important;
+  height: 88rpx !important;
+  margin-left: -18rpx !important;
+  font-size: 58rpx !important;
+  line-height: 1 !important;
+}
+
+.guest-actions text {
+  padding: 0 16rpx !important;
+}
+
+.third-button {
+  width: 88rpx !important;
+  height: 88rpx !important;
+}
+
+.third-button image {
+  width: 42rpx !important;
+  height: 42rpx !important;
+}
+
+.detail-nav,
+.point-nav {
+  height: calc(88rpx + var(--cf-safe-top)) !important;
+}
+
+.detail-nav view,
+.point-nav view {
+  min-height: 88rpx !important;
+  align-items: center !important;
+}
+
+.modal-close,
+.close {
+  display: grid !important;
+  place-items: center !important;
+  width: 88rpx !important;
+  height: 88rpx !important;
+  top: 0 !important;
+  right: 0 !important;
+}
