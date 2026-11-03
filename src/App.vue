@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core'
 import { App as NativeApp } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { oauthCallbackRoute } from './native/oauth'
+import { recordAppLog } from './api/diagnostics'
 onLaunch(() => {
   restoreLocale(); useSessionStore().restore()
   if (Capacitor.isNativePlatform()) {
@@ -14,7 +15,9 @@ onLaunch(() => {
       if (route) { Browser.close(); uni.reLaunch({ url: route }) }
     }
     NativeApp.addListener('appUrlOpen', ({ url }) => handleUrl(url))
-    NativeApp.getLaunchUrl().then(result => { if (result?.url) handleUrl(result.url) })
+    NativeApp.getLaunchUrl().then(result => { if (result?.url) handleUrl(result.url) }).catch((error: any) => {
+      recordAppLog('native.getLaunchUrl', 'failure', error?.message || '读取启动链接失败')
+    })
   }
 })
 </script>

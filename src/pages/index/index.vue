@@ -87,7 +87,7 @@ onMounted(async () => {
     } catch (error: any) { uni.showToast({ title: error?.message || t('第三方登录失败'), icon: 'none' }) }
   } else if (!showLogin.value) { uni.showTabBar(); await loadHome(); loadUnreadStatus() }
 })
-onShow(() => { syncTabBarLocale(); if (showLogin.value) uni.hideTabBar(); else { uni.showTabBar(); loadUnreadStatus() } })
+onShow(() => { syncTabBarLocale(); store.syncTabBarTheme(); if (showLogin.value) uni.hideTabBar(); else { uni.showTabBar(); loadUnreadStatus() } })
 function continueAfterLogin() {
   const target = uni.getStorageSync('cf_after_login')
   if (target === 'points') {
@@ -248,7 +248,7 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 .password-toggle svg{display:block;width:34rpx;height:34rpx;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 </style>
 <style scoped>
-.login-page{padding-top:calc(16px + var(--cf-safe-top))}
+.login-page{padding-top:calc(16px + var(--cf-safe-top) + 32rpx)}
 .login-top{min-height:52rpx}
 </style>
 <style scoped>.account-links{display:flex;align-items:center;gap:18rpx;white-space:nowrap}.account-links text{color:var(--cf-brand)}</style>

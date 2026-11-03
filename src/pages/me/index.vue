@@ -10,7 +10,7 @@ const store = useSessionStore()
 const profile = ref<any>({})
 async function loadProfile() { if (store.token) { try { profile.value = await api.profile() } catch {} } }
 onMounted(loadProfile)
-onShow(syncTabBarLocale)
+onShow(() => { syncTabBarLocale(); store.syncTabBarTheme() })
 watch(locale, loadProfile)
 function theme() { const modes = ['light', 'dark', 'system']; store.setTheme(modes[(modes.indexOf(store.theme) + 1) % modes.length]); uni.showToast({ title: t('主题已切换'), icon: 'none' }) }
 const themeName = computed(() => store.theme === 'dark' ? t('深色模式') : store.theme === 'system' ? t('跟随系统') : t('浅色模式'))
