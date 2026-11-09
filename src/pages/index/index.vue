@@ -8,6 +8,9 @@ import { recordAppLog } from '../../api/diagnostics'
 import googleLogo from '../../img/gogeimages.png'
 import microsoftLogo from '../../img/Microsoft_Logo_512px.png'
 import walletLogo from '../../img/web3.png'
+import CalendarPanel from '../../components/CalendarPanel.vue'
+import DataPanel from '../../components/DataPanel.vue'
+import MorePanel from '../../components/MorePanel.vue'
 import { oauthRedirectUrl, openOAuthUrl } from '../../native/oauth'
 import '../../styles/app.scss'
 const store = useSessionStore()
@@ -33,7 +36,7 @@ const cachedHome = readHomeCache()
 const home = ref<any>(cachedHome)
 const news = ref<any[]>(cachedHome?.news || [])
 const homeLoading = ref(!cachedHome)
-const homeTab = ref<'featured'|'calendar'|'data'>('featured')
+const homeTab = ref<'featured'|'calendar'|'data'|'more'>('featured')
 const showLogin = ref(true)
 async function loadHome() {
   homeLoading.value = !home.value
@@ -169,7 +172,7 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 }
 </script>
 <template>
-  <view class="page" :class="{ 'login-route': showLogin }">
+  <view class="page" :class="{ 'login-route': showLogin, 'calendar-route': !showLogin && homeTab === 'calendar' }">
     <view v-if="showLogin" class="login-page">
       <view class="login-top"><view class="network-pill"><text class="status-dot">●</text><text>Mainnet</text></view><view class="login-tools"><text class="locale-switch" @click="skipLogin">{{t('跳过')}}</text><text class="locale-switch" @click="uni.navigateTo({url:'/pages/me/diagnostics'})">{{t('接口日志')}}</text><text class="locale-switch" @click="toggleLocale">{{locale==='zh'?'中 / EN':'EN / 中'}}</text></view></view>
       <view class="login-hero"><view class="login-logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></view><view class="login-name">Crypto Flash <text class="pro-badge">PRO</text></view><text class="login-subtitle">{{t('专业级加密资讯与高胜率策略终端')}}</text></view>
@@ -191,18 +194,20 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
     <view v-else class="home-content">
       <view class="row"><view class="brand"><view class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></view><text>Crypto Flash</text></view><view class="bell-wrap" aria-label="通知" @click="uni.navigateTo({url:'/pages/me/messages'})"><image class="bell-icon" src="/static/bell.svg" mode="aspectFit"/><view v-if="hasUnread" class="bell-dot"></view></view></view>
       <view class="input search" @click="uni.navigateTo({url:'/pages/search/index'})"><svg class="search-symbol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>{{t('搜索新闻、币种、项目...')}}</view>
-      <view class="tabs"><text :class="['tab',{active:homeTab==='featured'}]" @click="homeTab='featured'">{{t('精选')}}</text><text :class="['tab',{active:homeTab==='calendar'}]" @click="homeTab='calendar'">{{t('日历')}}</text><text :class="['tab',{active:homeTab==='data'}]" @click="homeTab='data'">{{t('数据')}}</text><text class="tab" @click="uni.navigateTo({url:'/pages/me/markets'})">{{t('更多')}}</text></view>
-      <view v-if="homeTab === 'featured' || homeTab === 'data'" class="card"><view class="row"><text class="title card-title">{{t('多空比 (BTC)')}}</text><text class="muted home-action-link">{{t('更多 ›')}}</text></view><view v-if="home" class="ratio"><view><text class="up">{{t('多方')}}</text><text class="title up">{{home.ratio.long}}%</text></view><view class="gauge"><text class="title">{{home.ratio.value}}</text><text class="muted">{{t('多方主导')}}</text></view><view><text class="down">{{t('空方')}}</text><text class="title down">{{home.ratio.short}}%</text></view></view><view v-else class="home-skeleton ratio-skeleton"><i></i><i></i><i></i></view><view v-if="home" class="bar"><view :style="{width:home.ratio.long+'%'}"></view></view><view class="exchange-ratios"><text>OKX: 1.33</text><i></i><text>币安: 1.40</text></view></view>
-      <view v-if="homeTab === 'calendar'" class="calendar-card"><view class="row"><text class="title card-title">{{t('重要财经日历')}}</text><text class="muted home-action-link">{{t('实时数据')}}</text></view><view v-if="home?.calendar?.length" v-for="(event,index) in home.calendar.slice(0,3)" :key="event.id || index" class="calendar-row"><view class="calendar-date">{{event.date || event.time || event.eventTime || '--'}}</view><view class="calendar-copy"><text class="calendar-title">{{event.title || event.name || event.event || t('财经事件')}}</text><text class="muted">{{event.country || event.region || event.currency || ''}}</text></view><text class="calendar-impact">{{event.impact ? t(event.impact) : (event.level || '')}}</text></view><view v-else v-for="index in 3" :key="`calendar-skeleton-${index}`" class="calendar-row calendar-skeleton"><view></view><view></view><view></view></view></view>
+      <view class="tabs"><text :class="['tab',{active:homeTab==='featured'}]" @click="homeTab='featured'">{{t('精选')}}</text><text :class="['tab',{active:homeTab==='calendar'}]" @click="homeTab='calendar'">{{t('日历')}}</text><text :class="['tab',{active:homeTab==='data'}]" @click="homeTab='data'">{{t('数据')}}</text><text :class="['tab',{active:homeTab==='more'}]" @click="homeTab='more'">{{t('更多')}}</text></view>
+      <view v-if="homeTab === 'featured'" class="card"><view class="row"><text class="title card-title">{{t('多空比 (BTC)')}}</text><text class="muted home-action-link">{{t('更多 ›')}}</text></view><view v-if="home" class="ratio"><view><text class="up">{{t('多方')}}</text><text class="title up">{{home.ratio.long}}%</text></view><view class="gauge"><text class="title">{{home.ratio.value}}</text><text class="muted">{{t('多方主导')}}</text></view><view><text class="down">{{t('空方')}}</text><text class="title down">{{home.ratio.short}}%</text></view></view><view v-else class="home-skeleton ratio-skeleton"><i></i><i></i><i></i></view><view v-if="home" class="bar"><view :style="{width:home.ratio.long+'%'}"></view></view><view class="exchange-ratios"><text>OKX: 1.33</text><i></i><text>币安: 1.40</text></view></view>
+      <CalendarPanel v-if="homeTab === 'calendar'" />
+      <DataPanel v-if="homeTab === 'data'" />
+      <MorePanel v-if="homeTab === 'more'" />
+      <template v-if="homeTab === 'featured'">
       <view class="row section-head"><text class="title card-title">{{t('热门快讯')}}</text><text class="muted home-action-link" @click="uni.switchTab({url:'/pages/flash/list'})">{{t('查看全部 ›')}}</text></view>
       <view class="home-news-list"><view v-if="!news.length" v-for="index in 3" :key="`news-skeleton-${index}`" class="home-news-card home-skeleton news-skeleton"><i></i><view><i></i><i></i></view></view><view v-for="(item,index) in news.slice(0,3)" :key="item.id" class="home-news-card" @click="uni.navigateTo({url:'/pages/detail/news?id='+item.id})"><image class="news-thumb" :src="`/static/home-news-${index+1}.jpg`" mode="aspectFill"/><view class="home-news-copy"><view class="title news-title">{{item.title}}</view><view class="muted">{{item.time}} · {{item.source}}</view></view></view></view>
       <view class="row section-head"><text class="title card-title">{{t('市场行情')}}</text><text class="muted home-action-link" @click="uni.navigateTo({url:'/pages/me/markets'})">{{t('更多 ›')}}</text></view><view class="market-grid"><view v-if="!home?.coins?.length" v-for="index in 4" :key="`market-skeleton-${index}`" class="market-tile home-skeleton market-skeleton"><i></i><i></i><i></i></view><view v-for="coin in home?.coins" :key="coin[0]" class="market-tile"><text class="muted">{{coin[0]}}</text><text class="title price">{{coin[1]}}</text><text :class="coin[2].startsWith('+')?'up':'down'">{{coin[2]}}</text></view></view>
+      </template>
     </view>
   </view>
 </template>
 <style scoped>.login-brand{justify-content:center;margin-top:90rpx}.center{text-align:center}.pro{font-size:20rpx;color:var(--cf-brand)}.agreement{margin:24rpx 0;font-size:22rpx;color:var(--cf-muted)}.auth-links{display:flex;justify-content:space-between;margin-top:16rpx}.wallet{text-align:center;padding:36rpx 0}.wallet-icon{font-size:52rpx;color:var(--cf-brand)}.small-title{font-size:28rpx;margin-top:10rpx}.bell{font-size:42rpx;color:var(--cf-brand)}.search{margin-top:28rpx}.card-title{font-size:28rpx}.section-head{margin:28rpx 0 14rpx}.news-title{font-size:27rpx;margin-bottom:10rpx}.market-card{padding:22rpx 26rpx;margin-bottom:14rpx}.price{font-size:26rpx}.input{height:78rpx;border:1rpx solid var(--cf-line);border-radius:16rpx;padding:0 22rpx;color:var(--cf-text)}.ratio{display:flex;justify-content:space-between;align-items:end;text-align:center;padding:45rpx 10rpx 24rpx}.ratio view{display:flex;flex-direction:column;gap:8rpx}.gauge{width:200rpx;height:100rpx;border:14rpx solid var(--cf-line);border-bottom:0;border-radius:200rpx 200rpx 0 0;justify-content:end!important}.bar{height:14rpx;background:var(--cf-down);border-radius:8rpx;overflow:hidden}.bar view{height:100%;background:var(--cf-up)}</style>
-<style scoped>.calendar-card{margin-top:18rpx;padding:20rpx;border:1rpx solid var(--cf-line);border-radius:16rpx;background:var(--cf-card)}.calendar-row{display:flex;align-items:center;gap:14rpx;padding:16rpx 0;border-top:1rpx solid #F1F5F9}.calendar-date{flex:0 0 112rpx;color:var(--cf-soft);font-size:19rpx}.calendar-copy{display:flex;flex:1;flex-direction:column;gap:4rpx;min-width:0}.calendar-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:22rpx;font-weight:700}.calendar-copy .muted{font-size:18rpx}.calendar-impact{color:var(--cf-brand);font-size:18rpx}</style>
-<style scoped>.calendar-skeleton>view{height:20rpx;border-radius:6rpx;background:var(--cf-surface)}.calendar-skeleton>view:first-child{flex:0 0 112rpx}.calendar-skeleton>view:nth-child(2){flex:1}.calendar-skeleton>view:last-child{flex:0 0 42rpx}</style>
 <style scoped>
 .login-page{min-height:calc(100vh - 64rpx);padding:8rpx 20rpx 24rpx;background:var(--cf-bg);color:var(--cf-text)}
 .login-top{display:flex;justify-content:space-between;align-items:center;height:52rpx}.login-tools{display:flex;align-items:center;gap:20rpx}.network-pill{display:flex;align-items:center;gap:8rpx;padding:6rpx 14rpx;border-radius:24rpx;background:var(--cf-surface);color:var(--cf-muted);font-size:20rpx}.status-dot{color:var(--cf-up);font-size:15rpx}.locale-switch{color:var(--cf-muted);font-size:20rpx}
@@ -261,7 +266,6 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 .home-content .tab.active::after{position:absolute;right:28%;bottom:-1rpx;left:28%;height:4rpx;border-radius:4rpx;background:var(--cf-brand);content:''}
 .exchange-ratios{display:flex;align-items:center;justify-content:space-around;height:64rpx;margin-top:18rpx;border-top:1rpx solid var(--cf-divider);color:var(--cf-muted);font-size:23rpx}
 .exchange-ratios i{width:1rpx;height:28rpx;background:var(--cf-line)}
-.calendar-date{flex:0 0 190rpx;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:18rpx}
 .home-skeleton{position:relative;overflow:hidden;background:var(--cf-surface);border-color:transparent}
 .home-skeleton::after{position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:home-skeleton-shimmer 1.4s infinite;content:''}
 .ratio-skeleton{display:flex;align-items:flex-end;justify-content:space-between;height:184rpx;padding:28rpx 12rpx 16rpx}
@@ -275,4 +279,13 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 </style>
 <style scoped>
 .login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-wrap{position:relative;display:block;flex:0 0 48rpx;width:48rpx;height:48rpx}.bell-wrap .bell-icon{display:block;width:48rpx;height:48rpx}.bell-dot{position:absolute;top:-2rpx;right:-2rpx;width:16rpx;height:16rpx;border-radius:50%;background:#2563EB;border:2rpx solid var(--cf-card)}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}
+</style>
+<style scoped>
+.page.calendar-route{display:flex;flex-direction:column;height:calc(100vh - var(--window-top,0px) - var(--window-bottom,56px));min-height:0;padding:calc(48rpx + var(--cf-safe-top)) 40rpx 0;overflow:hidden;background:var(--cf-card)}
+.calendar-route .home-content{display:flex;flex:1;flex-direction:column;min-height:0;padding-bottom:0}
+.calendar-route .brand{gap:16rpx;font-size:38rpx;color:var(--cf-text)}
+.calendar-route .brand-mark{width:56rpx;height:56rpx;border-radius:50%}
+.calendar-route .brand-mark svg{width:32rpx;height:32rpx}
+.calendar-route .bell-wrap,.calendar-route .bell-icon{width:42rpx;height:42rpx;flex-basis:42rpx}
+.calendar-route .search{flex:none;height:88rpx;margin-top:36rpx;padding:0 28rpx;border:1rpx solid var(--cf-line);border-radius:28rpx;background:var(--cf-card);font-size:28rpx}
 </style>

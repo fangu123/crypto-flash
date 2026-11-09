@@ -3,6 +3,7 @@ import { locale } from '../locales'
 
 const path = (template: string, id: string | number) => template.replace('{id}', encodeURIComponent(String(id)))
 const unwrapList = (value: any): any[] => Array.isArray(value) ? value : value?.list || value?.records || value?.items || value?.data || []
+const unwrapMarketList = (value: any): any[] => Array.isArray(value?.tokens) ? value.tokens : unwrapList(value)
 const dateText = (value: any) => {
   if (!value) return ''
   const d = new Date(Number(value) < 1e12 ? Number(value) * 1000 : value)
@@ -160,7 +161,7 @@ export const api = {
         short: Number(short.toFixed(2)),
         value: sell > 0 ? Number((buy / sell).toFixed(2)) : 0,
       },
-      coins: unwrapList(overview).map(normalizeMarket),
+      coins: unwrapMarketList(overview).map(normalizeMarket),
       calendar: unwrapList(calendar).map(normalizeCalendarEvent),
       news: unwrapList(news).map(normalizeNews),
       points: lp ? [normalizePoint(lp)] : [],
@@ -208,7 +209,7 @@ export const api = {
   profile: async () => request('/app/profile/personalInfo'),
   updatePersonalInfo: (data: any) => request('/app/profile/updatePersonalInfo', { method: 'POST', data }),
   uploadProfileImage: (filePath: string) => uploadFile('/public/uploadFile', filePath, 'file'),
-  markets: async () => unwrapList(await request('/app/home/market-overview')).map(normalizeMarket),
+  markets: async () => unwrapMarketList(await request('/app/home/market-overview')).map(normalizeMarket),
   refreshToken: (isRemember = true) => request<any>('/app/profile/refreshToken', { method: 'POST', data: { isRemember }, skipRefresh: true }),
   staticContent: async (kind: string) => {
     if (kind === 'privacy') return { title: '隐私条款', body: '隐私条款内容尚未配置，请联系服务方获取正式文本。' }
