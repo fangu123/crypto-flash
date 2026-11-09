@@ -18,3 +18,27 @@ android/build/
 android/app/build/
 android/local.properties
 .DS_Store
+
+# Backend local configuration, credentials, data and build artifacts
+backend/**/.env*
+backend/**/*.pem
+backend/**/*.key
+backend/**/*.p12
+backend/**/*.pfx
+backend/**/*.jks
+backend/**/*.keystore
+backend/**/*.sql
+backend/**/*.db
+backend/**/*.db-*
+backend/**/*.sqlite
+backend/**/*.sqlite3
+backend/**/*.log
+backend/**/.idea/
+backend/**/.vscode/
+backend/**/temp/
+backend/**/static/uploadfile/
+backend/information_serve/config/settings*.yml
+backend/information_serve/config/settings*.yaml
+backend/information_serve/common/service/email_service_test.go
+backend/information_serve/bews_serve
+backend/information_serve/news_serve
