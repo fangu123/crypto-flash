@@ -2,14 +2,12 @@
 import { t } from '../locales'
 
 const tools = [
-  { label: '多空比', icon: 'scale', color: 'blue' },
   { label: '爆仓数据', icon: 'flame', color: 'red' },
   { label: '资金费率', icon: 'percent', color: 'yellow' },
   { label: 'ETF流向', icon: 'etf', color: 'green' },
   { label: '巨鲸监控', icon: 'whale', color: 'cyan' },
   { label: '链上数据', icon: 'chain', color: 'purple' },
   { label: '解锁日历', icon: 'unlock', color: 'indigo' },
-  { label: '收益计算', icon: 'calculator', color: 'gray' },
 ]
 
 const posts = [
@@ -77,35 +75,35 @@ const communities = [
 .more-panel{display:flex;flex-direction:column;gap:20rpx;padding-bottom:22rpx;color:var(--cf-text)}
 .more-section,.post-card{min-width:0;border:1rpx solid var(--cf-line);border-radius:22rpx;background:var(--cf-card)}
 .more-section{padding:20rpx 22rpx}
-.more-section-title{font-size:26rpx;font-weight:700;line-height:1.4}
-.tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:20rpx;margin-top:20rpx}
+.more-section-title{font-size:31rpx;font-weight:700;line-height:1.4}
+.tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:24rpx;margin-top:20rpx}
 .tool-item{display:flex;align-items:center;flex-direction:column;gap:8rpx;min-width:0}
 .tool-icon{display:grid;place-items:center;width:62rpx;height:62rpx;border-radius:20rpx}
 .tool-icon svg{width:30rpx;height:30rpx;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tool-icon.blue{background:#edf5ff;color:#3978ed}.tool-icon.red{background:#fff0f0;color:#ef5b5b}.tool-icon.yellow{background:#fff9e8;color:#e5a914}.tool-icon.green{background:#eafaf3;color:#13a878}
 .tool-icon.cyan{background:#eafaff;color:#16a9d2}.tool-icon.purple{background:#f7efff;color:#9c54e8}.tool-icon.indigo{background:#eef1ff;color:#5265d8}.tool-icon.gray{background:#f1f3f6;color:#677184}
-.tool-label{max-width:100%;color:var(--cf-text);font-size:20rpx;line-height:1.35;text-align:center;white-space:nowrap}
+.tool-label{max-width:100%;color:var(--cf-text);font-size:26rpx;line-height:1.4;text-align:center;overflow-wrap:anywhere}
 .posts-section{min-width:0}
 .more-section-heading{display:flex;align-items:center;justify-content:space-between;margin:2rpx 0 12rpx}
-.more-link{color:var(--cf-brand);font-size:20rpx}
+.more-link{color:var(--cf-brand);font-size:23rpx}
 .post-list{display:flex;flex-direction:column;gap:12rpx}
 .post-card{display:flex;align-items:center;gap:14rpx;min-height:100rpx;padding:14rpx 16rpx}
 .post-icon{display:grid;flex:none;width:66rpx;height:66rpx;place-items:center;border-radius:14rpx;color:#fff}
 .post-icon.blue{background:linear-gradient(135deg,#2563eb,#17bfd3)}.post-icon.purple{background:linear-gradient(135deg,#8b35d2,#e650c2)}
 .post-icon svg{width:31rpx;height:31rpx;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .post-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:7rpx}
-.post-title{overflow:hidden;color:var(--cf-text);font-size:23rpx;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
-.post-meta{color:var(--cf-soft);font-size:18rpx}
+.post-title{color:var(--cf-text);font-size:27rpx;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.post-meta{color:var(--cf-soft);font-size:23rpx;line-height:1.4}
 .community-section{overflow:hidden;padding:0}
 .community-heading{display:block;padding:18rpx 22rpx;border-bottom:1rpx solid var(--cf-divider)}
-.community-row{display:flex;align-items:center;gap:12rpx;min-height:88rpx;padding:12rpx 18rpx;border-bottom:1rpx solid var(--cf-divider)}
+.community-row{display:flex;align-items:center;gap:12rpx;min-height:100rpx;padding:14rpx 18rpx;border-bottom:1rpx solid var(--cf-divider)}
 .community-row:last-child{border-bottom:0}
 .community-icon{display:grid;flex:none;width:50rpx;height:50rpx;place-items:center;border-radius:50%;background:#229ed9;color:#fff}
 .community-icon svg{width:26rpx;height:26rpx;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .community-icon.x{background:#161b22;font-size:26rpx;font-weight:700}.community-icon.discord{background:#5865f2}
 .community-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4rpx}
-.community-name{color:var(--cf-text);font-size:22rpx;line-height:1.3}
-.community-meta{overflow:hidden;color:var(--cf-soft);font-size:17rpx;text-overflow:ellipsis;white-space:nowrap}
-.community-action{display:grid;flex:none;min-width:64rpx;height:42rpx;padding:0 12rpx;place-items:center;border-radius:24rpx;background:#eef6ff;color:var(--cf-brand);font-size:18rpx}
-@media(max-width:360px){.more-section{padding-right:16rpx;padding-left:16rpx}.tool-label{font-size:18rpx}.community-row{gap:9rpx;padding-right:12rpx;padding-left:12rpx}.community-meta{font-size:16rpx}.community-action{min-width:58rpx;padding:0 8rpx}}
+.community-name{color:var(--cf-text);font-size:27rpx;line-height:1.4}
+.community-meta{color:var(--cf-soft);font-size:23rpx;line-height:1.4;overflow-wrap:anywhere}
+.community-action{display:grid;flex:none;min-width:76rpx;height:52rpx;padding:0 12rpx;place-items:center;border-radius:26rpx;background:#eef6ff;color:var(--cf-brand);font-size:23rpx}
+@media(max-width:360px){.more-section{padding-right:16rpx;padding-left:16rpx}.community-row{gap:9rpx;padding-right:12rpx;padding-left:12rpx}.community-action{padding:0 8rpx}}
 </style>

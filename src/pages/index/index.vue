@@ -281,11 +281,7 @@ async function openOAuth(provider: 'google' | 'microsoft', action = '') {
 .login-page{display:flex;flex-direction:column;justify-content:space-between}.bell-wrap{position:relative;display:block;flex:0 0 48rpx;width:48rpx;height:48rpx}.bell-wrap .bell-icon{display:block;width:48rpx;height:48rpx}.bell-dot{position:absolute;top:-2rpx;right:-2rpx;width:16rpx;height:16rpx;border-radius:50%;background:#2563EB;border:2rpx solid var(--cf-card)}.login-subtitle{font-size:25rpx}.field-label{font-size:23rpx}.resend-hint{font-size:21rpx}.field-control{height:84rpx}.field-control input{font-size:26rpx}.resend-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:84rpx;padding:0;font-size:22rpx;line-height:1;text-align:center}.login-options{font-size:22rpx}.login-button{height:84rpx;font-size:26rpx}.divider{font-size:21rpx}.third-actions view{font-size:20rpx}.agreement{font-size:21rpx}.login-risk{font-size:21rpx}.home-content .search{height:72rpx;font-size:25rpx}.home-content .tab{font-size:25rpx}.home-content .card-title{font-size:31rpx}.home-action-link{color:var(--cf-brand)}.home-news-copy .news-title{font-size:26rpx}.home-news-copy .muted{font-size:21rpx}.market-tile .muted,.market-tile .up,.market-tile .down{font-size:21rpx}.market-tile .price{font-size:23rpx}
 </style>
 <style scoped>
-.page.calendar-route{display:flex;flex-direction:column;height:calc(100vh - var(--window-top,0px) - var(--window-bottom,56px));min-height:0;padding:calc(48rpx + var(--cf-safe-top)) 40rpx 0;overflow:hidden;background:var(--cf-card)}
+.page.calendar-route{display:flex;flex-direction:column;height:calc(100vh - var(--window-top,0px) - var(--window-bottom,56px));min-height:0;padding-bottom:0;overflow:hidden}
 .calendar-route .home-content{display:flex;flex:1;flex-direction:column;min-height:0;padding-bottom:0}
-.calendar-route .brand{gap:16rpx;font-size:38rpx;color:var(--cf-text)}
-.calendar-route .brand-mark{width:56rpx;height:56rpx;border-radius:50%}
-.calendar-route .brand-mark svg{width:32rpx;height:32rpx}
-.calendar-route .bell-wrap,.calendar-route .bell-icon{width:42rpx;height:42rpx;flex-basis:42rpx}
-.calendar-route .search{flex:none;height:88rpx;margin-top:36rpx;padding:0 28rpx;border:1rpx solid var(--cf-line);border-radius:28rpx;background:var(--cf-card);font-size:28rpx}
+.calendar-route .home-content>.row,.calendar-route .search,.calendar-route .tabs{flex-shrink:0}
 </style>

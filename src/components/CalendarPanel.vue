@@ -5,6 +5,7 @@ import { calendarDateKey, calendarDemoStart, getDemoCalendarEvents, type Calenda
 
 const selectedDate = ref(new Date(calendarDemoStart.year, calendarDemoStart.month, calendarDemoStart.day))
 const visibleMonth = ref(new Date(calendarDemoStart.year, calendarDemoStart.month, 1))
+const expanded = ref(false)
 const activeCategory = ref<CalendarCategory | 'all'>('all')
 const scrollTop = ref(0)
 const reminderKey = 'cf_calendar_demo_reminders'
@@ -106,7 +107,15 @@ function toggleReminder(id: string) {
         <button class="month-arrow" :aria-label="t('下个月')" @click="changeMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
       </view>
       <view class="weekdays"><text v-for="(day, index) in weekdays" :key="index">{{ day }}</text></view>
-      <swiper class="week-swiper" :current="weekIndex" :duration="200" @change="changeWeek">
+      <view v-if="expanded" class="month-dates">
+        <template v-for="(week, index) in weeks" :key="index">
+          <button v-for="day in week" :key="day.key" class="date-button" :class="{ selected: day.key === selectedKey, outside: day.outside, weekend: day.weekend }" :aria-label="day.key" :aria-pressed="day.key === selectedKey" @click="selectDate(day.date)">
+            <text>{{ day.day }}</text>
+            <view v-if="eventDates.has(day.key) && !day.outside" class="event-dot" :class="{ important: importantDates.has(day.key) }"></view>
+          </button>
+        </template>
+      </view>
+      <swiper v-else class="week-swiper" :current="weekIndex" :duration="200" @change="changeWeek">
         <swiper-item v-for="(week, index) in weeks" :key="index">
           <view class="week-dates">
             <button v-for="day in week" :key="day.key" class="date-button" :class="{ selected: day.key === selectedKey, outside: day.outside, weekend: day.weekend }" :aria-label="day.key" :aria-pressed="day.key === selectedKey" @click="selectDate(day.date)">
@@ -117,6 +126,9 @@ function toggleReminder(id: string) {
         </swiper-item>
       </swiper>
     </view>
+    <button class="calendar-toggle" :class="{ expanded }" :aria-label="t(expanded ? '收起日历' : '展开整月日历')" :aria-expanded="expanded" @click="expanded = !expanded">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
     <view class="calendar-filters">
       <button v-for="filter in filters" :key="filter.id" class="category-button" :class="{ active: activeCategory === filter.id }" :aria-pressed="activeCategory === filter.id" @click="chooseCategory(filter.id)">{{ t(filter.label) }}</button>
@@ -156,12 +168,16 @@ function toggleReminder(id: string) {
 .month-navigation{display:flex;align-items:center;justify-content:space-between;height:68rpx}
 .month-title{font-size:29rpx;font-weight:700}
 .month-arrow{width:48rpx;height:56rpx;margin:0;padding:0;background:transparent;color:var(--cf-soft)}
-.month-arrow::after,.date-button::after,.category-button::after,.reminder-button::after{border:0}
+.month-arrow::after,.date-button::after,.category-button::after,.reminder-button::after,.calendar-toggle::after{border:0}
 .month-arrow svg{width:28rpx;height:28rpx;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .weekdays,.week-dates{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center}
 .weekdays{align-items:center;height:46rpx;color:var(--cf-soft);font-size:22rpx}
 .week-swiper{height:80rpx}
 .week-dates{height:100%;align-items:center}
+.month-dates{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:80rpx;align-items:center}
+.calendar-toggle{flex:none;width:112rpx;height:48rpx;margin:0 auto;padding:0;border-radius:16rpx;background:transparent;color:var(--cf-soft)}
+.calendar-toggle svg{width:32rpx;height:32rpx;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.calendar-toggle.expanded svg{transform:rotate(180deg)}
 .date-button{position:relative;display:flex;flex-direction:column;width:76rpx;max-width:100%;height:76rpx;margin:0 auto;padding:0 0 5rpx;border-radius:24rpx;background:transparent;color:var(--cf-text);font-size:28rpx;font-weight:500}
 .date-button.outside,.date-button.weekend{color:var(--cf-soft)}
 .date-button.selected{background:var(--cf-brand);color:#fff;font-weight:700}

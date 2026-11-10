@@ -9,6 +9,7 @@ const translations: Record<string, string> = Object.assign({}, {
   '精选': 'Featured', '日历': 'Calendar', '数据': 'Data', '更多': 'More',
   '宏观数据': 'Macro', '政策监管': 'Regulation', '加密事件': 'Crypto',
   '今天': 'Today', '上个月': 'Previous month', '下个月': 'Next month',
+  '展开整月日历': 'Expand month calendar', '收起日历': 'Collapse calendar',
   '演示数据': 'Demo data', '高影响': 'High impact', '代币解锁': 'Token unlock', '项目事件': 'Project event',
   '前值': 'Previous', '预期': 'Forecast', '公布': 'Actual', '提醒我': 'Remind me', '已标记': 'Marked',
   '已取消本地标记': 'Local marker removed', '已标记在本机，演示不发送通知': 'Saved locally. Demo does not send notifications.',
